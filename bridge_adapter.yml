@@ -18,26 +18,16 @@
         enabled: yes
 
     - name: Create a bridge connection
-      nmcli:
-        conn_name: br0
-        conn_type: bridge
-        ifname: br0
-        state: present
+      command: nmcli connection add type bridge ifname br0 con-name br0
 
     - name: Add interface to the bridge (assuming the interface is eth0)
-      nmcli:
-        conn_name: br0-port
-        conn_type: ethernet
-        ifname: eth0
-        master: br0
-        state: present
+      command: nmcli connection add type ethernet ifname eth0 con-name br0-port master br0
 
     - name: Assign static IP to the bridge
-      nmcli:
-        conn_name: br0
-        ip4: 192.168.1.{{ inventory_hostname[-1] + 100 }}/24
-        gw4: 192.168.1.1
-        state: present
+      command: nmcli connection modify br0 ipv4.addresses 192.168.1.{{ inventory_hostname[-1] + 100 }}/24 ipv4.gateway 192.168.1.1 ipv4.method manual
+
+    - name: Bring up the bridge connection
+      command: nmcli connection up br0
 
     - name: Restart NetworkManager to apply changes
       systemd:
